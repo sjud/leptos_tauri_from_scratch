@@ -418,7 +418,7 @@ This is our three pronged binary.
 When we run cargo leptos server, we're going to get a server that is what's in our `if #[cfg(feature="ssr")] {` branch. We're going to hydrate, that's final `else` branch that is just empty. That actually gets filled in or something with a call to hydrate.
 <br>
 And our csr feature 
-```
+```rust
  else if #[cfg(feature="csr")]{
         pub fn main() {
             server_fn::client::set_server_url("http://127.0.0.1:3000");
@@ -430,20 +430,20 @@ Here we're setting the server functions to use the url base we've input here. I.
 Otherwise our tauri all will try to route server function network requests using it's own idea of what it's url is. Which is like `tauri://localhost` on macOs or something!
 <br>
 Since we are going to be getting API requests from different locations beside our server's domain let's set up CORs, if you don't do this your tauri apps won't be able to make server function calls.
-```
+```rust
             let cors = CorsLayer::new()
                 .allow_methods([axum::http::Method::GET, axum::http::Method::POST])
                 .allow_origin("tauri://localhost".parse::<axum::http::HeaderValue>().unwrap())
                 .allow_headers(vec![axum::http::header::CONTENT_TYPE]);
 ```
 And just layer it.
-```
+```rust
                 .layer(cors)
 ```
 If you are on windows the origin of your app will be different then "tauri://localhost" and you'll need to figure that out, as well as if you deploy it to places that aren't your localhost!
 <br>
 Everything else is standard leptos, so let's fill in the fallback and the lib really quick.
-```
+```sh
 touch src-orig/src/lib.rs && touch src-orig/src/fallback.rs
 ```
 
@@ -481,6 +481,7 @@ pub fn App() -> impl IntoView {
         }
     }
 }
+
 cfg_if::cfg_if! {
     if #[cfg(feature = "hydrate")] {
         use wasm_bindgen::prelude::wasm_bindgen;
@@ -540,7 +541,7 @@ Let's fill in our src-tauri/src folder.
 ```
 mkdir src-tauri/src && touch src-tauri/src/main.rs && touch src-tauri/src/lib.rs
 ```
-and drop this in `main.rs`
+and drop this in `src-tauri/src/main.rs`
 ```rust
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -549,7 +550,7 @@ fn main() {
     app_lib::run();
 }
 ```
-and in `lib.rs`
+and in `src-tauri/src/lib.rs`
 ```rust
 use tauri::Manager;
 
