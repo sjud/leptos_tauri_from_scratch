@@ -1,20 +1,20 @@
 This is a guide on how to build a leptos tauri project from scratch without using a template.
 <br><br>
-We've already done the following
+Fist
 ```sh
 cargo new leptos_tauri_from_scratch
 ```
 
-First, make our two seperate project folders. We need one for our actual app, 'src-orig' and the other is required when using `cargo tauri`
+Then, make our two seperate project folders. We need one for our actual app, 'src-orig' and the other is required when using `cargo tauri`
 ```sh
 mkdir src-orig && mkdir src-tauri
 ```
 
-Let's delete the original src folder,
+Delete the original src folder.
 ```sh
 rm -r src
 ```
- and rewrite the `Cargo.toml` file to the following.
+Rewrite the `Cargo.toml` file in our crate root to the following.
 ```toml
 [workspace]
 resolver = "2"
@@ -24,9 +24,9 @@ members = ["src-tauri", "src-orig"]
 codegen-units = 1
 lto = true
 ```
-We'll use resolver two because we're using a modern version of Rust. We'll list our workspace members. `codegen-units = 1` and `lto = true` are good things to have for our eventual release.
+We'll use resolver two because we're using a modern version of Rust. We'll list our workspace members. `codegen-units = 1` and `lto = true` are good things to have for our eventual release, they make the wasm file smaller.
 <br><br>
-What we're going to want to do is use cargo leptos for building our SSR server and trunk for building our CSR client that we bundle into apps with tauri.
+What we're going to do is use `cargo leptos`` for building our SSR server and we'll call trunk from `cargo tauri` for building our CSR client that we bundle into our different apps.
 Let's add a `Trunk.toml` file.
 ```toml
 [build]
@@ -36,9 +36,9 @@ target = "./src-orig/index.html"
 ignore = ["./src-tauri"]
 ```
 
-The target is the index.html that trunk uses to build the wasm and js files that we'll need for the bundling process when we call `cargo tauri build`
+The target of `index.html` is what trunk uses to build the wasm and js files that we'll need for the bundling process when we call `cargo tauri build`. We'll get the resulting files in a `src-orig/dist' folder.
 <br>
-Let's create the `index.html` file
+Create the `index.html` file
 
 ```sh
 touch src-orig/index.html
@@ -51,8 +51,6 @@ Let's fill it with
 	<head>
 		<link data-trunk rel="rust" data-wasm-opt="z" data-bin="leptos_tauri_from_scratch_bin"/>
 		<link rel="icon" type="image/x-icon" href="favicon.ico">
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	</head>
 	<body></body>
 </html>
@@ -61,13 +59,14 @@ This line
 ```html
 <link data-trunk rel="rust" data-wasm-opt="z" data-bin="leptos_tauri_from_scratch_bin"/>
 ```
-Tells trunk we want to use compile our wasm to be small `opt="z"` and that our binary will be named `"leptos_tauri_from_scratch_bin"`. We need to specify a that our binary will be a different name then our project name because we are also going to library wasm file and if we don't differentiate here then `cargo tauri` will get confused. More specifically two artifacts will be generated, one for the lib and the other for the binary and it won't know which to use.
+Tells trunk we want to compile our wasm to be small with `opt="z"` and that our binary will be named `"leptos_tauri_from_scratch_bin"`. <br>
+We need to specify a that our binary will be a different name then our project name because we are also going to get a wasm file from our library and if we don't use different names then `cargo tauri` will get confused. <br>
+More specifically two wasm artifacts will be generated, one for the lib and the other for the binary and it won't know which to use.
 <br><br>
-Let's create a favicon that we referenced.
+Create a favicon that we referenced.
 ```
 mkdir public && curl https://raw.githubusercontent.com/leptos-rs/leptos/main/examples/animated_show/public/favicon.ico > public/favicon.ico
 ```
-The other parts of the html, are standard setting a charset to utf-8 and the viewport content will be helpful when building for mobile.
 <br><br>
 Let's create a tauri configuration file.
 ```sh
@@ -137,49 +136,27 @@ You can basically ignore all of this except for
     "devPath": "http://127.0.0.1:3000",
     "distDir": "../src-orig/dist"
   },
-  "package": {
-    "productName": "leptos_tauri_from_scratch",
-    "version": "0.1.0"
-  },
-  "tauri": {
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 800,
-        "resizable": true,
-        "title": "LeptosChatApp",
-        "width": 1200
-      }
-    ],
 ```
 Let's look at 
 ```json
     "beforeBuildCommand": "trunk build --no-default-features -v --features \"csr\"",
 ```
-When we write `cargo tauri build` this will run before hand. Trunk will run it's build process, using the index.html file in the src-orig that we specified in `Trunk.toml` We'll run only with the CSR feature. This is important. We are going to build an SSR app, and serve it over the internet but we are going to build a tauri client for desktop and mobile using CSR and then it's going to make network requests to our server that is servering our app to browsers using SSR. This is the best of both worlds, we get the SEO of SSR and other advantages while being able to use CSR to build our app for other platforms.
+When we `cargo tauri build` this will run before hand. Trunk will run it's build process, using the index.html file in the src-orig that we specified in `Trunk.toml` <br>
+We'll build a binary using only the CSR feature. This is important. <br>
+We are going to build an SSR app, and serve it over the internet but we are also going to build a tauri client for desktop and mobile using CSR.<br>
+It's going to make network requests to our server that is servering our app to browsers using SSR.<br>
+ This is the best of both worlds, we get the SEO of SSR and other advantages while being able to use CSR to build our app for other platforms.
 ```
     "devPath": "http://127.0.0.1:3000",
     "distDir": "../src-orig/dist"
 ```
-Check https://tauri.app/v1/api/config/#buildconfig for what these do, but we'll trunk build into a folder `src-orig/dist` which we reference here.
+Check https://tauri.app/v1/api/config/#buildconfig for what these do, but our before build command `trunk build` will build into a folder `src-orig/dist` which we reference here.
 <br><br>
-This is just how big we want the window.
-```
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 800,
-        "resizable": true,
-        "title": "LeptosChatApp",
-        "width": 1200
-      }
-    ],
-```
-Let's add a Cargo.toml to both of our packages.
+Let's add a `Cargo.toml`` to both of our packages.
 ```sh
-touch src-tauri/Cargo.toml
+touch src-tauri/Cargo.toml && touch src-orig/Cargo.toml
 ```
-Let's change that file to this, we're using the 2.0.0 alpha version of tauri to build to mobile.
+Let's change `src-tauri/Cargo.toml` to this, we're using the 2.0.0 alpha version of tauri to be able to build to mobile.
 ```toml
 [package]
 name = "src_tauri"
@@ -213,12 +190,7 @@ fn main() {
     tauri_build::build();
 }
 ```
-And never think about it again.<br><br>
-Let's create the cargo.toml for our leptos app.
-```
-touch src-orig/Cargo.toml
-```
-And let's dump in
+In our `src-orig/Cargo.toml` let's add.
 ```
 [package]
 name = "leptos_tauri_from_scratch"
@@ -285,8 +257,7 @@ bin-default-features = false
 lib-features = ["hydrate"]
 lib-default-features = false
 ```
-So this looks like a normal SSR leptos, except for<br>
-- We have a CSR, Hydrate, and SSR versions.
+So this looks like a normal SSR leptos, except for our CSR, Hydrate, and SSR versions.
 ```toml
 [features]
 csr = [ "leptos/csr","leptos_meta/csr","leptos_router/csr", ]
@@ -299,18 +270,17 @@ also our binary is specified and named
 name="leptos_tauri_from_scratch_bin"
 path="./src/main.rs"
 ```
-our lib is specified, but unnamed (it will default to the project name in cargo leptos and in cargo tauri)
+our lib is specified, but unnamed (it will default to the project name in cargo leptos and in cargo tauri). We need the different crate types for `cargo leptos serve` and `cargo tauri build`
 ```toml
 [lib]
 crate-type = ["staticlib", "cdylib", "rlib"]
 ```
-
 We've added the override to our cargo leptos metadata.
 ```toml
 [package.metadata.leptos]
 bin-exe-name="leptos_tauri_from_scratch_bin"
 ```
-Our tauri app is going to send server function calls to this address, this is where we'll server our hydratable SSR client from.
+Our tauri app is going to send server function calls to this address, this is aksi where we'll serve our hydratable SSR client from.
 ```
 site-addr = "0.0.0.0:3000"
 ```
@@ -426,17 +396,17 @@ And our csr feature
         }
     }
 ```
-Here we're setting the server functions to use the url base we've input here. I.e local host, on the port we specified in the leptos metadata.<br>
-Otherwise our tauri all will try to route server function network requests using it's own idea of what it's url is. Which is like `tauri://localhost` on macOs or something!
+Here we're setting the server functions to use the url base that we access in our browser. I.e local host, on the port we specified in the leptos metadata.<br>
+Otherwise our tauri app will try to route server function network requests using it's own idea of what it's url is. Which is `tauri://localhost` on macOS, and something else on windows.
 <br>
-Since we are going to be getting API requests from different locations beside our server's domain let's set up CORs, if you don't do this your tauri apps won't be able to make server function calls.
+Since we are going to be getting API requests from different locations beside our server's domain let's set up CORS, if you don't do this your tauri apps won't be able to make server function calls because it will run into CORS erros.
 ```rust
             let cors = CorsLayer::new()
                 .allow_methods([axum::http::Method::GET, axum::http::Method::POST])
                 .allow_origin("tauri://localhost".parse::<axum::http::HeaderValue>().unwrap())
                 .allow_headers(vec![axum::http::header::CONTENT_TYPE]);
 ```
-And just layer it.
+Layer it.
 ```rust
                 .layer(cors)
 ```
@@ -447,7 +417,7 @@ Everything else is standard leptos, so let's fill in the fallback and the lib re
 touch src-orig/src/lib.rs && touch src-orig/src/fallback.rs
 ```
 
-Let's dump this bog standard leptos code in the lib.rs
+Let's dump this bog standard leptos code in the `src-orig/src/lib.rs``
 ```rust
 use leptos::*;
 
@@ -495,7 +465,7 @@ cfg_if::cfg_if! {
     }
 }
 ```
-and add a generic fallback file.
+and add this to `src-org/src/fallback.rs`
 ```rust
 use axum::{
     body::Body,
@@ -541,7 +511,7 @@ Let's fill in our src-tauri/src folder.
 ```
 mkdir src-tauri/src && touch src-tauri/src/main.rs && touch src-tauri/src/lib.rs
 ```
-and drop this in `src-tauri/src/main.rs`
+and drop this in `src-tauri/src/main.rs` This is standard tauri boilerplate.
 ```rust
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -610,4 +580,4 @@ and then you should have your app, I'm on macOS so here's what I get. It's for d
     Bundling leptos_tauri_from_scratch_0.1.0_x64.dmg (/Users/sam/Projects/lepto_tauri_from_scratch/target/release/bundle/dmg/leptos_tauri_from_scratch_0.1.0_x64.dmg)
     Running bundle_dmg.sh
 ```
-Open run it and voilá.
+Open run it and voilá. Click hello world button and read "Hey" from the server.
