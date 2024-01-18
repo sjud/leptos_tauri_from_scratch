@@ -1,6 +1,6 @@
 This is a guide on how to build a leptos tauri project from scratch without using a template.
 <br><br>
-Fist
+First
 ```sh
 cargo new leptos_tauri_from_scratch
 ```
@@ -26,7 +26,7 @@ lto = true
 ```
 We'll use resolver two because we're using a modern version of Rust. We'll list our workspace members. `codegen-units = 1` and `lto = true` are good things to have for our eventual release, they make the wasm file smaller.
 <br><br>
-What we're going to do is use `cargo leptos`` for building our SSR server and we'll call trunk from `cargo tauri` for building our CSR client that we bundle into our different apps.
+What we're going to do is use `cargo leptos` for building our SSR server and we'll call trunk from `cargo tauri` for building our CSR client that we bundle into our different apps.
 Let's add a `Trunk.toml` file.
 ```toml
 [build]
@@ -36,7 +36,7 @@ target = "./src-orig/index.html"
 ignore = ["./src-tauri"]
 ```
 
-The target of `index.html` is what trunk uses to build the wasm and js files that we'll need for the bundling process when we call `cargo tauri build`. We'll get the resulting files in a `src-orig/dist' folder.
+The target of `index.html` is what trunk uses to build the wasm and js files that we'll need for the bundling process when we call `cargo tauri build`. We'll get the resulting files in a `src-orig/dist` folder.
 <br>
 Create the `index.html` file
 
@@ -60,7 +60,7 @@ This line
 <link data-trunk rel="rust" data-wasm-opt="z" data-bin="leptos_tauri_from_scratch_bin"/>
 ```
 Tells trunk we want to compile our wasm to be small with `opt="z"` and that our binary will be named `"leptos_tauri_from_scratch_bin"`. <br>
-We need to specify a that our binary will be a different name then our project name because we are also going to get a wasm file from our library and if we don't use different names then `cargo tauri` will get confused. <br>
+We need to specify that our binary will be a different name then our project name because we are also going to get a wasm file from our library and if we don't use different names then `cargo tauri` will get confused. <br>
 More specifically two wasm artifacts will be generated, one for the lib and the other for the binary and it won't know which to use.
 <br><br>
 Create a favicon that we referenced.
@@ -406,11 +406,8 @@ Since we are going to be getting API requests from different locations beside ou
                 .allow_origin("tauri://localhost".parse::<axum::http::HeaderValue>().unwrap())
                 .allow_headers(vec![axum::http::header::CONTENT_TYPE]);
 ```
-Layer it.
-```rust
-                .layer(cors)
-```
-If you are on windows the origin of your app will be different then "tauri://localhost" and you'll need to figure that out, as well as if you deploy it to places that aren't your localhost!
+
+If you are on windows the origin of your app will be different then `tauri://localhost` and you'll need to figure that out, as well as if you deploy it to places that aren't your localhost!
 <br>
 Everything else is standard leptos, so let's fill in the fallback and the lib really quick.
 ```sh
@@ -539,7 +536,7 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 ```
-We're gonna open devtools right away to see what is going on in our app. We need the tauri_http_plugin to make http calls, and generate_context reads our `tauri.conf.json` file.
+We're gonna open devtools right away to see what is going on in our app. We need the tauri_http_plugin to make http calls, and generate_context reads our `tauri.conf.json` in the package in which its run.
 <br><br>
 We need an icon folder and an icon to build.
 ```sh
