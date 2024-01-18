@@ -161,7 +161,7 @@ When we write `cargo tauri build` this will run before hand. Trunk will run it's
     "devPath": "http://127.0.0.1:3000",
     "distDir": "../src-orig/dist"
 ```
-Check https://tauri.app/v1/api/config/#buildconfig for what these do, they aren't very relevant in this guide.
+Check https://tauri.app/v1/api/config/#buildconfig for what these do, but we'll trunk build into a folder `src-orig/dist` which we reference here.
 <br><br>
 This is just how big we want the window.
 ```
