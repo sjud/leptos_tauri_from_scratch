@@ -550,7 +550,7 @@ fn main() {
 }
 ```
 and in `lib.rs`
-```
+```rust
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -571,7 +571,7 @@ pub fn run() {
 We're gonna open devtools right away to see what is going on in our app. We need the tauri_http_plugin to make http calls, and generate_context reads our `tauri.conf.json` file.
 <br><br>
 We need an icon folder and an icon to build.
-```
+```sh
 mkdir src-tauri/icons && curl https://raw.githubusercontent.com/tauri-apps/tauri/dev/examples/.icons/128x128.png > src-tauri/icons/icon.png
 ```
 set nightly
@@ -601,7 +601,7 @@ It'll build with csr before
 ```sh
 Running beforeBuildCommand `trunk build --no-default-features -v --features "csr"`
 ```
-and then you should have your app, I'm on macOs so here's what I get. It's for desktop.
+and then you should have your app, I'm on macOS so here's what I get. It's for desktop.
 ```
  Compiling src_tauri v0.0.1 (/Users/sam/Projects/lepto_tauri_from_scratch/src-tauri)
     Finished release [optimized] target(s) in 2m 26s
